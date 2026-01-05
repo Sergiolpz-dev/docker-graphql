@@ -1,73 +1,62 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# 🚀 Docker + GitHub Actions: Aprendizaje de CI/CD
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Este repositorio es una guía práctica para entender cómo automatizar la construcción y el despliegue de imágenes de Docker utilizando **GitHub Actions**. El objetivo es aprender a gestionar versiones automáticas (Semantic Versioning) y publicar imágenes en Docker Hub.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🛠️ Tecnologías Aprendidas
 
-## Installation
+* **Docker**: Containerización de aplicaciones y optimización de imágenes (Multi-stage builds).
+* **GitHub Actions**: Automatización de flujos de trabajo (Workflows) mediante archivos YAML.
+* **Semantic Versioning**: Gestión automática de etiquetas de versión (`Major.Minor.Patch`) basada en commits.
+* **Docker Hub**: Almacenamiento y distribución de imágenes en la nube.
 
-```bash
-$ npm install
-```
+## 🏗️ Estructura del Workflow
 
-## Running the app
+El archivo `.github/workflows/docker-ci.yml` realiza los siguientes pasos automáticamente cada vez que haces un `push` a la rama `main`:
 
-```bash
-# development
-$ npm run start
+1.  **Checkout Code**: Descarga el código del repositorio en el servidor de ejecución de GitHub.
+2.  **Git Semantic Version**: Calcula la siguiente versión del proyecto analizando los mensajes de los commits.
+3.  **Docker Login**: Se autentica de forma segura en Docker Hub utilizando **Secrets** de GitHub.
+4.  **Build**: Crea dos versiones de la imagen:
+    * Una con el tag de la versión específica (ej: `0.0.3-prerelease1`).
+    * Otra con el tag `latest` para tener siempre la versión más reciente disponible.
+5.  **Push**: Sube ambas imágenes a tu repositorio de Docker Hub.
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## 🔑 Configuración Necesaria (Secrets)
 
-## Test
+Para que el despliegue automático funcione, es necesario configurar los siguientes **Actions Secrets** en tu repositorio de GitHub (`Settings > Secrets and variables > Actions`):
 
-```bash
-# unit tests
-$ npm run test
+| Secreto | Descripción |
+| :--- | :--- |
+| `DOCKER_USER` | Tu nombre de usuario de Docker Hub. |
+| `DOCKER_PASSWORD` | Tu contraseña o Access Token (Recomendado) de Docker Hub. |
 
-# e2e tests
-$ npm run test:e2e
 
-# test coverage
-$ npm run test:cov
-```
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 📝 Notas de Aprendizaje (Tips Técnicos)
 
-## Stay in touch
+### 🐳 Docker Tips
+* **Uso de imágenes Alpine**: Siempre que sea posible, usamos `node:20-alpine` para que el peso de la imagen sea mínimo.
+* **Orden de las Capas**: Primero copiamos el `package.json` y ejecutamos `yarn install`. Esto permite que, si solo cambias el código y no las librerías, Docker use la caché y el build sea mucho más rápido.
+* **Versiones LTS**: Aprendimos que usar versiones impares (como Node 19) puede dar problemas de compatibilidad. Siempre es mejor usar versiones **LTS** (18, 20, 22).
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 🤖 GitHub Actions Tips
+* **Seguridad (Secrets)**: Nunca subas credenciales al código. Los secretos de GitHub las ocultan incluso en los logs (aparecen como `***`).
+* **Sintaxis del Comando Push**: A diferencia del `build`, el comando `docker push` **no** lleva un punto al final. 
+* **Fetch Depth**: En el paso de checkout, usamos `fetch-depth: 0` para que la acción de versionamiento pueda leer todo el historial de commits y calcular la versión correcta.
 
-## License
+---
 
-Nest is [MIT licensed](LICENSE).
+## 🚀 Cómo usar este repo
+1. Realiza cambios en tu aplicación local.
+2. Haz un commit siguiendo las reglas de Semantic Version:
+   * `feat: descripción` -> Sube el **Minor** (0.1.0).
+   * `fix: descripción` -> Sube el **Patch** (0.0.2).
+   * Incluir `major` en el commit -> Sube el **Major** (1.0.0).
+3. Sube los cambios: `git push origin main`.
+4. ¡Revisa el progreso en la pestaña **Actions** de GitHub!
